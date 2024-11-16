@@ -1,11 +1,14 @@
 
 import { Button, Form, FormControl, FormField, FormItem, FormMessage, Input } from "@/components/ui"
+import { PATH } from "@/constants/common"
 import { useLogin } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
+import { iziRoute } from "@/routes/routes"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Computer, LoaderCircle } from 'lucide-react'
 import * as React from "react"
 import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
 import { z } from "zod"
 
 const Icons = {
@@ -26,6 +29,7 @@ interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function UserAuthForm({ className }: UserAuthFormProps) {
     const { mutate: login, isPending } = useLogin();
+    const navigate = useNavigate()
 
     const form = useForm({
         resolver: zodResolver(schema),
@@ -33,11 +37,13 @@ export function UserAuthForm({ className }: UserAuthFormProps) {
     })
 
     const onSubmit = async (data: formType) => {
-        try {
-            await login(data)
-        } catch (error) {
-            console.error(error)
-        }
+        await login(data, {
+            onSuccess: () => {
+                navigate(
+                    iziRoute.getPathById(PATH.dashboard)
+                )
+            },
+        })
     }
 
     return (

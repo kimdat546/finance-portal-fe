@@ -1,19 +1,15 @@
 import { PATH } from '@/constants/common';
-import MainLayout from '@/layouts/MainLayout';
 import AuthLayout from '@/layouts/AuthLayout';
+import MainLayout from '@/layouts/MainLayout';
 import { IRoute, IziRoute } from '@/lib/IziRoute';
 import page from '@/pages';
-import { JSX } from 'react/jsx-runtime';
-
-export const withPrivate = (Component: React.FC) => (props: JSX.IntrinsicAttributes) => {
-    return <Component {...props} />;
-};
+import { withPrivate } from '@/routes/withPrivate';
 
 const routes: IRoute[] = [
     {
         id: PATH.admin,
         path: '/admin',
-        private: false,
+        private: true,
         outsideLayout: true,
         element: MainLayout,
         children: [
@@ -27,8 +23,8 @@ const routes: IRoute[] = [
         ],
     },
     {
-        id: PATH.login,
-        path: '/login',
+        id: PATH.auth,
+        path: '/auth',
         private: false,
         outsideLayout: true,
         element: AuthLayout,
@@ -36,7 +32,14 @@ const routes: IRoute[] = [
             {
                 id: PATH.login,
                 title: 'Login',
-                path: '',
+                path: 'login',
+                private: false,
+                element: page.public.login,
+            },
+            {
+                id: PATH.signup,
+                title: 'Signup',
+                path: 'signup',
                 private: false,
                 element: page.public.login,
             },

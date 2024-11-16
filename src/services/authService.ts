@@ -10,6 +10,7 @@ export const signup = async (data: { email: string; password: string; name?: str
 
 export const login = async (data: { email: string; password: string }) => {
     const response = await instance.post('/auth/login', data);
+    console.log("response", response)
     const { accessToken } = response.data;
     useAuthStore.getState().setAccessToken(accessToken);
     return response.data;

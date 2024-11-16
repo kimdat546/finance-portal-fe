@@ -1,13 +1,12 @@
-import React from 'react';
-import {
-    createHashRouter,
-    createBrowserRouter,
-    RouteObject,
-    matchPath,
-} from 'react-router-dom';
-
 import { LoadableComponent } from '@loadable/component';
 import { omit, set } from 'lodash';
+import React from 'react';
+import {
+    createBrowserRouter,
+    createHashRouter,
+    matchPath,
+    RouteObject,
+} from 'react-router-dom';
 
 export interface IRoute<TExtendProperty = any> {
     id: string;
@@ -36,12 +35,13 @@ export class IziRoute<T = any> {
     constructor(parameters: {
         routes: IRoute<T>[];
         type?: 'hash' | 'default';
-        privateHOC?: (Component: React.FC) => (props: any) => React.ReactNode;
+        privateHOC?: (Component: React.FC | LoadableComponent<unknown>) => (props: any) => JSX.Element;
     }) {
         if (parameters.type === 'hash') {
             this.routerInstance = createHashRouter;
         }
         this.routes = parameters.routes;
+        this.privateHOC = parameters.privateHOC;
         const test = this.routes
             .map((item) => this.generateRouteObject(item))
             .filter(Boolean) as RouteObject[];
