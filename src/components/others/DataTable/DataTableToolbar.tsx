@@ -21,12 +21,12 @@ export function DataTableToolbar<TData>({
                     placeholder="Filter tasks..."
                     value={
                         (table
-                            .getColumn("title")
+                            .getColumn("description")
                             ?.getFilterValue() as string) ?? ""
                     }
                     onChange={(event) =>
                         table
-                            .getColumn("title")
+                            .getColumn("description")
                             ?.setFilterValue(event.target.value)
                     }
                     className="h-8 w-[150px] lg:w-[250px]"

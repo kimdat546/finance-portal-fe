@@ -16,3 +16,7 @@ export * from "./separator";
 export * from "./table";
 export * from "./tabs";
 export * from "./form";
+export * from "./radio-group";
+export * from "./switch";
+export * from "./progress";
+export * from "./scroll-area";

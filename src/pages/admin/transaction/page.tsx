@@ -1,15 +1,25 @@
-import { CalendarDateRangePicker } from '@/components/others/CalendarDateRangePicker';
-import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Checkbox, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
-import { chartData, transactionTypeLabels } from '@/data';
-import { Transaction } from '@/types';
-import { ColumnDef } from '@tanstack/react-table';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import {
     DataTable,
     DataTableColumnHeader,
     DataTableRowActions,
 } from "@/components/others/DataTable";
+import { FileUploader } from '@/components/others/FileUploader';
+import { Badge, Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui';
+import { transactionTypeLabels } from '@/data';
+import { Transaction } from '@/types';
+import { ColumnDef } from '@tanstack/react-table';
+import { useEffect, useState } from 'react';
+import readXlsxFile from "read-excel-file";
+import { useUploadTransactions } from '@/hooks/useTransaction';
 
+const headerKeywords = {
+    date: "Ngày giá trị\nValue Date",
+    refNumber: "Số giao dịch\nReference Number",
+    description: "Diễn giải\nExplanation",
+    debit: "Nợ\nDebit",
+    credit: "Có\nCredit",
+    balance: "Số dư\nBalance",
+};
 
 const columns: ColumnDef<Transaction>[] = [
     {
@@ -101,7 +111,77 @@ const columns: ColumnDef<Transaction>[] = [
     },
 ];
 
+const processFile = async (file: File | Blob | ArrayBuffer, uploadTransactions: { mutateAsync: (arg0: { transactions: { walletId: string; date: Date; refNumber: string; amount: number; description: string; transactionType: string; balance: number; }[]; }) => any; }) => {
+    const walletId = "751c2535-d607-49ed-a74a-b4783e1805bd";
+    readXlsxFile(file).then(async (rows) => {
+        // Function to find the header row index
+        const findHeaderRow = (data: any[], keywords: any[]) => {
+            return data.findIndex((row) =>
+                row.some((cell: string | any[]) => keywords.some(
+                    (keyword) => typeof cell === 'string' && cell.includes(keyword)
+                ))
+            );
+        };
+
+        // Find the header row index
+        const { balance, ...filteredHeaderKeywords } = headerKeywords;
+        const headerRowIndex = findHeaderRow(rows, Object.values(filteredHeaderKeywords).flat());
+
+        if (headerRowIndex !== -1) {
+            // Extract data starting from the header row
+            const headers = rows[headerRowIndex];
+            const dataRows = rows.slice(headerRowIndex + 1);
+
+            // Create a column mapping based on the headers
+            const columnMapping: { [key: string]: number } = {};
+            headers.forEach((header, index) => {
+                for (const [key, values] of Object.entries(headerKeywords)) {
+                    if (typeof header === 'string' && values.includes(header)) {
+                        columnMapping[key] = index;
+                        break;
+                    }
+                }
+            });
+
+            // Map data to the required format
+            const transactions = dataRows.map((row) => {
+                return ({
+                    walletId: walletId,
+                    date: row[columnMapping.date] ? new Date(row[columnMapping.date] as any) : new Date(),
+                    refNumber: row[columnMapping.refNumber] ? String(row[columnMapping.refNumber]) : '',
+                    amount: row[columnMapping.debit] ? Number(row[columnMapping.debit]) : Number(row[columnMapping.credit]),
+                    description: row[columnMapping.description] ? String(row[columnMapping.description]) : '',
+                    transactionType: row[columnMapping.debit] ? "EXPENSE" : "INCOME",
+                    balance: row[columnMapping.balance] ? Number(row[columnMapping.balance]) : 0,
+                })
+            });
+
+            // Upload transactions to the backend
+            try {
+                const response = await uploadTransactions.mutateAsync({ transactions });
+                console.log("Upload successful:", response);
+            } catch (error) {
+                console.error("Upload failed:", error);
+            }
+        } else {
+            console.error("Header row not found.");
+        }
+    });
+}
+
 const page = () => {
+    const [files, setFiles] = useState<File[]>([])
+    const uploadTransactions = useUploadTransactions();
+
+    useEffect(() => {
+        if (files.length === 0) return;
+        const file = files[0];
+        if (file) {
+            processFile(file, uploadTransactions);
+        }
+    }, [files])
+
+
     return (
         <div className="h-full flex-1 flex-col space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
@@ -111,8 +191,28 @@ const page = () => {
                         Here&apos;s a list of your tasks for this month!
                     </p>
                 </div>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline">
+                            Upload files {files.length > 0 && `(${files.length})`}
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-xl">
+                        <DialogHeader>
+                            <DialogTitle>Upload files</DialogTitle>
+                            <DialogDescription>
+                                Drag and drop your files here or click to browse.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <FileUploader
+                            maxFileCount={1}
+                            maxSize={1 * 1024 * 1024}
+                            onValueChange={setFiles}
+                        />
+                    </DialogContent>
+                </Dialog>
             </div>
-            <DataTable data={data?.transactions} columns={columns} />
+            <DataTable data={[]} columns={columns} />
         </div>
     );
 }

@@ -1,23 +1,30 @@
 import WalletSwitcher from '@/components/others/WalletSwitcher';
 import { Avatar, AvatarFallback, AvatarImage, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Input } from '@/components/ui';
 import { groupsWallet } from "@/data";
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { PATH } from "@/constants/common";
+import { iziRoute } from '@/routes/routes';
 
 const MainLayout = () => {
+    const navigate = useNavigate()
     return (
-        <div className="flex flex-col">
+        <div className="relative flex flex-col min-h-screen w-full">
             <div className="border-b">
                 <div className="flex h-16 items-center px-4">
                     <WalletSwitcher groups={groupsWallet} />
                     <nav className="flex items-center space-x-4 lg:space-x-6 mx-6">
                         <Link
-                            to="/admin/dashboard"
+                            to={
+                                iziRoute.getPathById(PATH.dashboard)
+                            }
                             className="text-sm font-medium transition-colors hover:text-primary"
                         >
                             Dashboard
                         </Link>
                         <Link
-                            to="/admin/transaction"
+                            to={
+                                iziRoute.getPathById(PATH.transaction)
+                            }
                             className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
                         >
                             Transactions
@@ -87,7 +94,9 @@ const MainLayout = () => {
                                             ⌘B
                                         </DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => navigate(iziRoute.getPathById(PATH.profile))}
+                                    >
                                         Settings
                                         <DropdownMenuShortcut>
                                             ⌘S

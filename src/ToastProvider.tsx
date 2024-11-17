@@ -20,8 +20,10 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 <ToastViewport />
                 {toastState.toasts.map((toast: ToasterToast) => (
                     <Toast key={toast.id} variant="default">
-                        <ToastTitle>{toast.title}</ToastTitle>
-                        <ToastDescription>{toast.description}</ToastDescription>
+                        <div className='flex flex-col text-left gap-2 text-base'>
+                            <ToastTitle>{toast.title}</ToastTitle>
+                            <ToastDescription>{toast.description}</ToastDescription>
+                        </div>
                         <ToastClose />
                     </Toast>
                 ))}</ToastProviderComponent>

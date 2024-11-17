@@ -4,7 +4,7 @@ import { Link, Outlet } from 'react-router-dom';
 
 const AuthLayout = () => {
     return (
-        <div className="container relative hidden min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+        <div className="container relative grid min-h-screen flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
             <Link
                 to="/examples/authentication"
                 className={cn(

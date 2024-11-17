@@ -10,8 +10,10 @@ export const PATH = {
     // admin
     admin: "admin",
     dashboard: "dashboard",
+    transaction: "transaction",
     settings: "settings",
-    transactions: "transactions",
     appearance: "appearance",
-    notifications: "notifications",
+    notification: "notification",
+    profile: "profile",
+    wallet: "wallet",
 } as const;
