@@ -11,6 +11,8 @@ import { ColumnDef } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 import readXlsxFile from "read-excel-file";
 import { useUploadTransactions } from '@/hooks/useTransaction';
+import { toast } from "sonner";
+import { splitIntoBatches } from '@/lib/utils';
 
 const headerKeywords = {
     date: "Ngày giá trị\nValue Date",
@@ -112,7 +114,7 @@ const columns: ColumnDef<Transaction>[] = [
 ];
 
 const processFile = async (file: File | Blob | ArrayBuffer, uploadTransactions: { mutateAsync: (arg0: { transactions: { walletId: string; date: Date; refNumber: string; amount: number; description: string; transactionType: string; balance: number; }[]; }) => any; }) => {
-    const walletId = "751c2535-d607-49ed-a74a-b4783e1805bd";
+    const walletId = "d74757e0-090d-4370-b133-eee8b9e75b97";
     readXlsxFile(file).then(async (rows) => {
         // Function to find the header row index
         const findHeaderRow = (data: any[], keywords: any[]) => {
@@ -145,6 +147,7 @@ const processFile = async (file: File | Blob | ArrayBuffer, uploadTransactions: 
 
             // Map data to the required format
             const transactions = dataRows.map((row) => {
+                console.log(row, row[columnMapping.date], new Date(row[columnMapping.date] as any));
                 return ({
                     walletId: walletId,
                     date: row[columnMapping.date] ? new Date(row[columnMapping.date] as any) : new Date(),
@@ -154,17 +157,25 @@ const processFile = async (file: File | Blob | ArrayBuffer, uploadTransactions: 
                     transactionType: row[columnMapping.debit] ? "EXPENSE" : "INCOME",
                     balance: row[columnMapping.balance] ? Number(row[columnMapping.balance]) : 0,
                 })
-            });
+            }).filter((transaction) => transaction.refNumber !== '');
 
-            // Upload transactions to the backend
-            try {
-                const response = await uploadTransactions.mutateAsync({ transactions });
-                console.log("Upload successful:", response);
-            } catch (error) {
-                console.error("Upload failed:", error);
+            // Split transactions into batches
+            const batchSize = 100; // Adjust the batch size as needed
+            const batches = splitIntoBatches(transactions, batchSize);
+
+            // Upload each batch to the backend
+            for (const batch of batches) {
+                try {
+                    await uploadTransactions.mutateAsync({ transactions: batch });
+                } catch (error) {
+                    toast.error("Batch upload failed", {
+                        description: (error as any).message || "An error occurred",
+                    });
+                }
             }
+            toast.success("Upload successful.");
         } else {
-            console.error("Header row not found.");
+            toast.error("Header row not found.");
         }
     });
 }

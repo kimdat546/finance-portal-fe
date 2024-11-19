@@ -14,12 +14,11 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue
-} from "@/components/ui"
-
-import { showToast } from "@/lib/toastUtils"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+} from "@/components/ui";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 
 const schema = z.object({
@@ -46,7 +45,7 @@ export function PaymentMethodForm() {
         defaultValues,
     })
     const onSubmit = async (data: formType) => {
-        showToast("Success", "Appearance updated successfully")
+        toast.success("Appearance updated successfully")
     }
 
     return (

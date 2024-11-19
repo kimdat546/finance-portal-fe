@@ -1,8 +1,8 @@
 import { ENV } from "@/configs/env";
-import { showToast } from "@/lib/toastUtils";
 import { refreshToken } from "@/services/authService";
 import { useAuthStore } from "@/store/authStore";
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { toast } from "sonner";
 
 export const instance = axios.create({
     baseURL: ENV.APP_API_ENDPOINT,
@@ -37,9 +37,14 @@ instance.interceptors.response.use(
             return instance(originalRequest);
         }
 
-        showToast(
-            `Error ${response?.status || ''}`,
-            response?.data?.message || 'An error occurred'
+        toast.error(`Error ${response?.status || ''}`,
+            {
+                description: response?.data?.message || 'An error occurred' || error.message,
+                action: {
+                    label: 'Close',
+                    onClick: () => console.log('Close!'),
+                },
+            },
         );
 
         return Promise.reject(error);

@@ -1,14 +1,14 @@
 
-import { Button, buttonVariants, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, RadioGroup, RadioGroupItem } from "@/components/ui"
-import { showToast } from "@/lib/toastUtils"
-import { cn } from "@/lib/utils"
-import { useSettingsStore } from '@/store/settingsStore'
-import { zodResolver } from "@hookform/resolvers/zod"
-import { ChevronDown } from 'lucide-react'
-import * as React from "react"
-import { useEffect } from "react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { Button, buttonVariants, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, RadioGroup, RadioGroupItem } from "@/components/ui";
+import { cn } from "@/lib/utils";
+import { useSettingsStore } from '@/store/settingsStore';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDown } from 'lucide-react';
+import * as React from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const schema = z.object({
     theme: z.enum(["light", "dark", "system"], {
@@ -38,7 +38,7 @@ export function AppearanceForm({ className }: AppearanceFormProps) {
 
     const onSubmit = async (data: formType) => {
         setTheme(data.theme)
-        showToast("Success", "Appearance updated successfully")
+        toast.success("Appearance updated successfully")
     }
 
     useEffect(() => {
