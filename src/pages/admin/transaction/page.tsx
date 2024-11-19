@@ -6,13 +6,16 @@ import {
 import { FileUploader } from '@/components/others/FileUploader';
 import { Badge, Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui';
 import { transactionTypeLabels } from '@/data';
+import { usePagination } from "@/hooks/use-pagination";
+import { splitIntoBatches } from '@/lib/utils';
+import { fetchTransactions, uploadTransactions } from "@/services/transactionService";
+import { fetchMyWallets, fetchWallets } from "@/services/walletService";
 import { Transaction } from '@/types';
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { ColumnDef } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 import readXlsxFile from "read-excel-file";
-import { useUploadTransactions } from '@/hooks/useTransaction';
 import { toast } from "sonner";
-import { splitIntoBatches } from '@/lib/utils';
 
 const headerKeywords = {
     date: "Ngày giá trị\nValue Date",
@@ -113,8 +116,8 @@ const columns: ColumnDef<Transaction>[] = [
     },
 ];
 
-const processFile = async (file: File | Blob | ArrayBuffer, uploadTransactions: { mutateAsync: (arg0: { transactions: { walletId: string; date: Date; refNumber: string; amount: number; description: string; transactionType: string; balance: number; }[]; }) => any; }) => {
-    const walletId = "d74757e0-090d-4370-b133-eee8b9e75b97";
+const processFile = async (file: File | Blob | ArrayBuffer, walletId: string,
+    uploadTransactions: { mutateAsync: (arg0: { transactions: Transaction[]; }) => any; }) => {
     readXlsxFile(file).then(async (rows) => {
         // Function to find the header row index
         const findHeaderRow = (data: any[], keywords: any[]) => {
@@ -147,9 +150,8 @@ const processFile = async (file: File | Blob | ArrayBuffer, uploadTransactions: 
 
             // Map data to the required format
             const transactions = dataRows.map((row) => {
-                console.log(row, row[columnMapping.date], new Date(row[columnMapping.date] as any));
                 return ({
-                    walletId: walletId,
+                    walletId,
                     date: row[columnMapping.date] ? new Date(row[columnMapping.date] as any) : new Date(),
                     refNumber: row[columnMapping.refNumber] ? String(row[columnMapping.refNumber]) : '',
                     amount: row[columnMapping.debit] ? Number(row[columnMapping.debit]) : Number(row[columnMapping.credit]),
@@ -182,16 +184,30 @@ const processFile = async (file: File | Blob | ArrayBuffer, uploadTransactions: 
 
 const page = () => {
     const [files, setFiles] = useState<File[]>([])
-    const uploadTransactions = useUploadTransactions();
+    const uploadTransactionsMutation = useMutation({
+        mutationFn: uploadTransactions,
+    })
+    const { page, pageSize, setPage, setPageSize } = usePagination();
+
+    const { data, isLoading } = useQuery({
+        queryKey: ['transactions', page, pageSize],
+        queryFn: () => fetchTransactions(page, pageSize),
+        placeholderData: keepPreviousData
+    })
+
+    const { data: myWallets } = useQuery({
+        queryKey: ['my-wallets'],
+        queryFn: () => fetchMyWallets(),
+    })
 
     useEffect(() => {
+        if (!myWallets) return;
         if (files.length === 0) return;
         const file = files[0];
-        if (file) {
-            processFile(file, uploadTransactions);
+        if (file && myWallets?.[0]?.id) {
+            processFile(file, myWallets[0].id, uploadTransactionsMutation);
         }
     }, [files])
-
 
     return (
         <div className="h-full flex-1 flex-col space-y-4 p-8 pt-6">
@@ -223,8 +239,16 @@ const page = () => {
                     </DialogContent>
                 </Dialog>
             </div>
-            <DataTable data={[]} columns={columns} />
-        </div>
+            <DataTable
+                data={data?.data || []}
+                columns={columns}
+                totalItems={data?.total || 0}
+                pageIndex={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+            />
+        </div >
     );
 }
 

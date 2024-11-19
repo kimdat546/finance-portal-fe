@@ -27,11 +27,21 @@ import { DataTableToolbar } from "./DataTableToolbar";
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    totalItems: number;
+    pageIndex: number;
+    pageSize: number;
+    onPageChange: (page: number) => void;
+    onPageSizeChange: (pageSize: number) => void;
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
+    totalItems,
+    pageIndex,
+    pageSize,
+    onPageChange,
+    onPageSizeChange,
 }: DataTableProps<TData, TValue>) {
     const [rowSelection, setRowSelection] = React.useState({});
     const [columnVisibility, setColumnVisibility] =
@@ -43,17 +53,26 @@ export function DataTable<TData, TValue>({
     const table = useReactTable({
         data,
         columns,
+        pageCount: Math.ceil(totalItems / pageSize),
         state: {
             sorting,
             columnVisibility,
             rowSelection,
             columnFilters,
+            pagination: {
+                pageIndex, pageSize
+            },
         },
+        manualPagination: true,
         enableRowSelection: true,
         onRowSelectionChange: setRowSelection,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
-        onColumnVisibilityChange: setColumnVisibility,
+        onColumnVisibilityChange: setColumnVisibility, onPaginationChange: (updater) => {
+            const newState = typeof updater === 'function' ? updater({ pageIndex, pageSize }) : updater;
+            onPageChange(newState.pageIndex);
+            onPageSizeChange(newState.pageSize);
+        },
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -70,22 +89,18 @@ export function DataTable<TData, TValue>({
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => {
-                                    return (
-                                        <TableHead
-                                            key={header.id}
-                                            colSpan={header.colSpan}
-                                        >
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                      header.column.columnDef
-                                                          .header,
-                                                      header.getContext()
-                                                  )}
-                                        </TableHead>
-                                    );
-                                })}
+                                {headerGroup.headers.map((header) => <TableHead
+                                    key={header.id}
+                                    colSpan={header.colSpan}
+                                >
+                                    {header.isPlaceholder
+                                        ? null
+                                        : flexRender(
+                                            header.column.columnDef
+                                                .header,
+                                            header.getContext()
+                                        )}
+                                </TableHead>)}
                             </TableRow>
                         ))}
                     </TableHeader>

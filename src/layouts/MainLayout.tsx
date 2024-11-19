@@ -36,7 +36,9 @@ const MainLayout = () => {
                             Products
                         </Link>
                         <Link
-                            to="#"
+                            to={
+                                iziRoute.getPathById(PATH.profile)
+                            }
                             className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
                         >
                             Settings
