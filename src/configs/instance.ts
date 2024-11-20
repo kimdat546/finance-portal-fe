@@ -30,10 +30,20 @@ instance.interceptors.response.use(
         if (response?.status === 400) {
             onError400(error);
         }
-        if (error.response.status === 401 && !originalRequest._retry) {
+
+        if (response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
+
+            // Check if the request is the refresh token request to avoid infinite loop
+            if (originalRequest.url?.includes('/auth/refresh-token')) {
+                useAuthStore.getState().setAccessToken(null);
+                window.location.href = '/auth/login';
+                return Promise.reject(error);
+            }
+
             const newAccessToken = await refreshToken();
             axios.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+            originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
             return instance(originalRequest);
         }
 

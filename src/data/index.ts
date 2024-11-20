@@ -77,15 +77,15 @@ export const groupsWallet = [
 
 export const transactionTypeLabels = [
     {
-        value: "income",
+        value: "INCOME",
         label: "Income",
     },
     {
-        value: "expense",
+        value: "EXPENSE",
         label: "Expense",
     },
     {
-        value: "transfer",
+        value: "TRANSFER",
         label: "Transfer",
     },
 ];

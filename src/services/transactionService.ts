@@ -5,9 +5,9 @@ export const uploadTransactions = async (data: any) => {
     return response.data;
 };
 
-export const fetchTransactions = async (page: number, pageSize: number) => {
+export const fetchTransactions = async (page: number, pageSize: number, search: string = '') => {
     const response = await instance.get('/transactions', {
-        params: { page, pageSize, },
+        params: { page, pageSize, search },
     });
     return response.data;
 };
