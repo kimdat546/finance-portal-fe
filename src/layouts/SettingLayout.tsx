@@ -1,13 +1,11 @@
-import { buttonVariants, Separator } from '@/components/ui';
-import { cn } from '@/lib/utils';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { PATH } from '@/constants/common'
-import { iziRoute } from '@/routes/routes'
-
+import { buttonVariants, Separator } from "@/components/ui";
+import { cn } from "@/lib/utils";
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { PATH } from "@/constants/common";
+import { iziRoute } from "@/routes/routes";
 
 const SettingLayout = () => {
-    const { pathname } = useLocation()
-
+    const { pathname } = useLocation();
 
     const sidebarNavItems = [
         {
@@ -26,7 +24,11 @@ const SettingLayout = () => {
             title: "Wallets",
             href: iziRoute.getPathById(PATH.wallet),
         },
-    ]
+        {
+            title: "Categories",
+            href: iziRoute.getPathById(PATH.category),
+        },
+    ];
 
     return (
         <div className="h-full flex-1 flex-col space-y-6 p-10 pb-16">
@@ -41,7 +43,7 @@ const SettingLayout = () => {
                 <aside className="-mx-4 lg:w-1/5">
                     <nav
                         className={cn(
-                            "flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1",
+                            "flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1"
                         )}
                     >
                         {sidebarNavItems.map((item) => (
@@ -67,6 +69,6 @@ const SettingLayout = () => {
             </div>
         </div>
     );
-}
+};
 
-export default SettingLayout
+export default SettingLayout;

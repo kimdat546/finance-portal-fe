@@ -16,4 +16,5 @@ export const PATH = {
     notification: "notification",
     profile: "profile",
     wallet: "wallet",
+    category: "category",
 } as const;

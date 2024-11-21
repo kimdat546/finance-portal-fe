@@ -8,6 +8,7 @@ export default {
         notification: loadable(() => import("./admin/notification/page")),
         wallet: loadable(() => import("./admin/wallet/page")),
         transaction: loadable(() => import("./admin/transaction/page")),
+        category: loadable(() => import("./admin/category/page")),
     },
     public: {
         login: loadable(() => import("./public/sign-in/page")),

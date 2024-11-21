@@ -1,12 +1,34 @@
-import WalletSwitcher from '@/components/others/WalletSwitcher';
-import { Avatar, AvatarFallback, AvatarImage, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Input } from '@/components/ui';
-import { groupsWallet } from "@/data";
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import WalletSwitcher from "@/components/others/WalletSwitcher";
+import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
+    Button,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuTrigger,
+    Input,
+} from "@/components/ui";
 import { PATH } from "@/constants/common";
-import { iziRoute } from '@/routes/routes';
+import { groupsWallet } from "@/data";
+import { useLogout } from "@/hooks/useAuth";
+import { iziRoute } from "@/routes/routes";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 
 const MainLayout = () => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const { mutate: logout, isPending } = useLogout();
+
+    const handleLogout = async () => {
+        await logout();
+        navigate(iziRoute.getPathById(PATH.login));
+    };
+
     return (
         <div className="relative flex flex-col min-h-screen w-full">
             <div className="border-b">
@@ -14,17 +36,13 @@ const MainLayout = () => {
                     <WalletSwitcher groups={groupsWallet} />
                     <nav className="flex items-center space-x-4 lg:space-x-6 mx-6">
                         <Link
-                            to={
-                                iziRoute.getPathById(PATH.dashboard)
-                            }
+                            to={iziRoute.getPathById(PATH.dashboard)}
                             className="text-sm font-medium transition-colors hover:text-primary"
                         >
                             Dashboard
                         </Link>
                         <Link
-                            to={
-                                iziRoute.getPathById(PATH.transaction)
-                            }
+                            to={iziRoute.getPathById(PATH.transaction)}
                             className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
                         >
                             Transactions
@@ -36,9 +54,7 @@ const MainLayout = () => {
                             Products
                         </Link>
                         <Link
-                            to={
-                                iziRoute.getPathById(PATH.profile)
-                            }
+                            to={iziRoute.getPathById(PATH.profile)}
                             className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
                         >
                             Settings
@@ -97,7 +113,13 @@ const MainLayout = () => {
                                         </DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                        onClick={() => navigate(iziRoute.getPathById(PATH.profile))}
+                                        onClick={() =>
+                                            navigate(
+                                                iziRoute.getPathById(
+                                                    PATH.profile
+                                                )
+                                            )
+                                        }
                                     >
                                         Settings
                                         <DropdownMenuShortcut>
@@ -109,7 +131,10 @@ const MainLayout = () => {
                                     </DropdownMenuItem>
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={handleLogout}
+                                    disabled={isPending}
+                                >
                                     Log out
                                     <DropdownMenuShortcut>
                                         ⇧⌘Q
@@ -123,6 +148,6 @@ const MainLayout = () => {
             <Outlet />
         </div>
     );
-}
+};
 
-export default MainLayout
+export default MainLayout;

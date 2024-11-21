@@ -1,54 +1,62 @@
-
-import { Button, Form, FormControl, FormField, FormItem, FormMessage, Input } from "@/components/ui"
-import { PATH } from "@/constants/common"
-import { useLogin } from "@/hooks/useAuth"
-import { cn } from "@/lib/utils"
-import { iziRoute } from "@/routes/routes"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Computer, LoaderCircle } from 'lucide-react'
-import * as React from "react"
-import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
-import { z } from "zod"
+import {
+    Button,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormMessage,
+    Input,
+} from "@/components/ui";
+import { PATH } from "@/constants/common";
+import { useLogin } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
+import { iziRoute } from "@/routes/routes";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Computer, LoaderCircle } from "lucide-react";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
 
 const Icons = {
     spinner: LoaderCircle,
     gitHub: Computer,
-}
+};
 
 const schema = z.object({
     email: z.string().email(),
     password: z.string().min(8),
-})
+});
 
-type formType = z.infer<typeof schema>
+type formType = z.infer<typeof schema>;
 
-const defaultValues: formType = { email: "", password: "" }
+const defaultValues: formType = { email: "", password: "" };
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
+interface UserLoginFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function UserAuthForm({ className }: UserAuthFormProps) {
+export function UserLoginForm({ className }: UserLoginFormProps) {
     const { mutate: login, isPending } = useLogin();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const form = useForm({
         resolver: zodResolver(schema),
         defaultValues,
-    })
+    });
 
     const onSubmit = async (data: formType) => {
         await login(data, {
             onSuccess: () => {
-                navigate(
-                    iziRoute.getPathById(PATH.dashboard)
-                )
+                navigate(iziRoute.getPathById(PATH.dashboard));
             },
-        })
-    }
+        });
+    };
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className={cn("grid gap-6", className)} >
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className={cn("grid gap-6", className)}
+            >
                 <div className="grid gap-2">
                     <div className="grid gap-1">
                         <FormField
@@ -57,8 +65,11 @@ export function UserAuthForm({ className }: UserAuthFormProps) {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <Input placeholder="name@example.com" type="email"
-                                            {...field} />
+                                        <Input
+                                            placeholder="name@example.com"
+                                            type="email"
+                                            {...field}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -73,17 +84,18 @@ export function UserAuthForm({ className }: UserAuthFormProps) {
                                 <FormItem>
                                     <FormControl>
                                         <Input
-                                            placeholder="********" type="password" autoComplete="off"
-                                            {...field} />
+                                            placeholder="********"
+                                            type="password"
+                                            autoComplete="off"
+                                            {...field}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
                     </div>
-                    <Button disabled={
-                        !form.formState.isValid || isPending
-                    }>
+                    <Button disabled={!form.formState.isValid || isPending}>
                         {isPending && (
                             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                         )}
@@ -110,5 +122,5 @@ export function UserAuthForm({ className }: UserAuthFormProps) {
                 GitHub
             </Button>
         </Form>
-    )
+    );
 }

@@ -7,6 +7,13 @@ export const usePagination = () => {
     const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
     const searchText = searchParams.get('search') || '';
 
+    const filters: { [key: string]: string } = {};
+    searchParams.forEach((value, key) => {
+        if (key !== 'page' && key !== 'pageSize' && key !== 'search') {
+            filters[key] = value;
+        }
+    });
+
     const setPage = (newPage: number) => {
         searchParams.set('page', newPage.toString());
         setSearchParams(searchParams);
@@ -21,6 +28,27 @@ export const usePagination = () => {
         searchParams.set('search', newSearch);
         setSearchParams(searchParams);
     }
+
+    const setFilter = (key: string, value: string | undefined) => {
+        if (value) {
+            searchParams.set(key, value);
+        } else {
+            searchParams.delete(key);
+        }
+        setSearchParams(searchParams);
+    };
+
+    const resetFilters = () => {
+        const keysToRemove: string[] = [];
+        searchParams.forEach((_value, key) => {
+            if (key !== 'page' && key !== 'pageSize' && key !== 'search') {
+                keysToRemove.push(key);
+            }
+        });
+        keysToRemove.forEach((key) => searchParams.delete(key));
+        setSearchParams(searchParams);
+    };
+
 
     useEffect(() => {
         let updated = false;
@@ -41,5 +69,5 @@ export const usePagination = () => {
         }
     }, [searchParams, setSearchParams]);
 
-    return { page, pageSize, setPage, setPageSize, searchText, setSearchText };
+    return { page, pageSize, setPage, setPageSize, searchText, setSearchText, setFilter, resetFilters, filters };
 };

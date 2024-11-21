@@ -17,24 +17,46 @@ import {
     Separator,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { useSearchParams } from "react-router-dom";
 
-interface DataTableFacetedFilterProps<TData, TValue> {
-    column?: Column<TData, TValue>;
+interface DataTableFacetedFilterProps {
     title?: string;
     options: {
         label: string;
         value: string;
         icon?: React.ComponentType<{ className?: string }>;
     }[];
+    setFilter: (key: string, value: string | undefined) => void;
+    filterKey: string;
 }
 
-export function DataTableFacetedFilter<TData, TValue>({
-    column,
+export function DataTableFacetedFilter({
     title,
     options,
-}: DataTableFacetedFilterProps<TData, TValue>) {
-    const facets = column?.getFacetedUniqueValues();
-    const selectedValues = new Set(column?.getFilterValue() as string[]);
+    setFilter,
+    filterKey,
+}: DataTableFacetedFilterProps) {
+    const [searchParams] = useSearchParams();
+    const [selectedValues, setSelectedValues] = React.useState<Set<string>>(
+        new Set(searchParams.get(filterKey)?.split(",") || [])
+    );
+
+    const handleSelect = (value: string) => {
+        const newSelectedValues = new Set(selectedValues);
+        if (newSelectedValues.has(value)) {
+            newSelectedValues.delete(value);
+        } else {
+            newSelectedValues.add(value);
+        }
+        setSelectedValues(newSelectedValues);
+        setFilter(filterKey, Array.from(newSelectedValues).join(","));
+    };
+
+    React.useEffect(() => {
+        setSelectedValues(
+            new Set(searchParams.get(filterKey)?.split(",") || [])
+        );
+    }, [searchParams, filterKey]);
 
     return (
         <Popover>
@@ -99,24 +121,9 @@ export function DataTableFacetedFilter<TData, TValue>({
                                 return (
                                     <CommandItem
                                         key={option.value}
-                                        onSelect={() => {
-                                            if (isSelected) {
-                                                selectedValues.delete(
-                                                    option.value
-                                                );
-                                            } else {
-                                                selectedValues.add(
-                                                    option.value
-                                                );
-                                            }
-                                            const filterValues =
-                                                Array.from(selectedValues);
-                                            column?.setFilterValue(
-                                                filterValues.length
-                                                    ? filterValues
-                                                    : undefined
-                                            );
-                                        }}
+                                        onSelect={() =>
+                                            handleSelect(option.value)
+                                        }
                                     >
                                         <div
                                             className={cn(
@@ -132,11 +139,6 @@ export function DataTableFacetedFilter<TData, TValue>({
                                             <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
                                         )}
                                         <span>{option.label}</span>
-                                        {facets?.get(option.value) && (
-                                            <span className="ml-auto flex h-4 w-4 items-center justify-center font-mono text-xs">
-                                                {facets.get(option.value)}
-                                            </span>
-                                        )}
                                     </CommandItem>
                                 );
                             })}
@@ -146,9 +148,10 @@ export function DataTableFacetedFilter<TData, TValue>({
                                 <CommandSeparator />
                                 <CommandGroup>
                                     <CommandItem
-                                        onSelect={() =>
-                                            column?.setFilterValue(undefined)
-                                        }
+                                        onSelect={() => {
+                                            setSelectedValues(new Set());
+                                            setFilter(filterKey, undefined);
+                                        }}
                                         className="justify-center text-center"
                                     >
                                         Clear filters

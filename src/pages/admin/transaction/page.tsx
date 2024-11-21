@@ -219,12 +219,12 @@ const page = () => {
     const uploadTransactionsMutation = useMutation({
         mutationFn: uploadTransactions,
     });
-    const { page, pageSize, setPage, setPageSize, searchText } =
+    const { page, pageSize, setPage, setPageSize, searchText, filters } =
         usePagination();
 
     const { data } = useQuery({
-        queryKey: ["transactions", page, pageSize, searchText],
-        queryFn: () => fetchTransactions(page, pageSize, searchText),
+        queryKey: ["transactions", page, pageSize, searchText, filters],
+        queryFn: () => fetchTransactions(page, pageSize, searchText, filters),
         placeholderData: keepPreviousData,
     });
 

@@ -23,6 +23,7 @@ export type Category = BaseEntity & {
     userId: string;
     name: string;
     icon?: string;
+    parentId?: string;
 };
 
 export type Card = BaseEntity & {
